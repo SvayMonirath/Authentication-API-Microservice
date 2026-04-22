@@ -6,9 +6,11 @@ import { UserRepository } from 'src/repository/user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaModule } from 'prisma/prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret:
