@@ -6,4 +6,7 @@ export class RegisterResponse {
 export class LoginResponse {
   status: string;
   message: string;
+  data: {
+    access_token: string;
+  };
 }

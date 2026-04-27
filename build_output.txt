@@ -1,0 +1,4 @@
+
+> authentication-api-microservice@0.0.1 build /Users/sorpheatepy/Library/CloudStorage/OneDrive-CambodiaAcademyofDigitalTechnology/Year2/Backend/Personal_Project/authentication-api-microservice
+> nest build
+

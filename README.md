@@ -1,4 +1,3 @@
-
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
@@ -28,6 +27,38 @@
 $ pnpm install
 ```
 
+## Frontend demo
+
+The app now serves a simple browser UI from `public/` at the same origin as the API.
+
+```bash
+$ pnpm run start:dev
+```
+
+Then open `http://localhost:3000/` in your browser. The page includes register, login, and logout forms that call:
+
+- `POST /authentication/register`
+- `POST /authentication/login`
+- `POST /authentication/logout`
+
+If you run the API on a different port, update the backend base URL field in the page.
+
+## Authentication response format
+
+`POST /authentication/login` now returns the access token in the JSON response body (no `Set-Cookie`):
+
+```json
+{
+  "status": "success",
+  "message": "User logged in successfully",
+  "data": {
+    "access_token": "<jwt>"
+  }
+}
+```
+
+Use the token in other projects via `Authorization: Bearer <jwt>`.
+
 ## Compile and run the project
 
 ```bash
@@ -53,4 +84,3 @@ $ pnpm run test:e2e
 # test coverage
 $ pnpm run test:cov
 ```
-

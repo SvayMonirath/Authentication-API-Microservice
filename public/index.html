@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authentication Microservice Demo</title>
+  <meta name="theme-color" content="#07111f" />
+</head>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #07111f;
+    --bg-deep: #050a13;
+    --surface: rgba(11, 18, 34, 0.76);
+    --surface-strong: rgba(14, 23, 42, 0.95);
+    --surface-muted: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(100, 210, 255, 0.3);
+    --text: #eff6ff;
+    --muted: #98abc7;
+    --accent: #66d6ff;
+    --accent-2: #7cffa9;
+    --accent-3: #ffd37a;
+    --danger: #ff7a8a;
+    --shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Avenir Next', 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 12% 10%, rgba(102, 214, 255, 0.18), transparent 22%),
+      radial-gradient(circle at 88% 14%, rgba(124, 255, 169, 0.12), transparent 20%),
+      radial-gradient(circle at 50% 98%, rgba(255, 211, 122, 0.08), transparent 26%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.78), transparent 96%);
+  }
+
+  .shell {
+    width: min(1180px, calc(100% - 24px));
+    margin: 0 auto;
+    padding: 36px 0 48px;
+  }
+
+  .hero-panel {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+    align-items: stretch;
+    margin-bottom: 18px;
+  }
+
+  .hero-copy,
+  .status-card,
+  .controls,
+  .card {
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--surface), var(--surface-strong));
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(20px);
+  }
+
+  .hero-copy {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 38px);
+    border-radius: 30px;
+  }
+
+  .hero-copy::after {
+    content: '';
+    position: absolute;
+    inset: auto -12% -60% auto;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(102, 214, 255, 0.18), transparent 62%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    margin: 0 0 14px;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 11ch;
+    font-size: clamp(2.8rem, 6vw, 5.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.07em;
+  }
+
+  .lede {
+    max-width: 62ch;
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 1.02rem;
+    line-height: 1.72;
+  }
+
+  .feature-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .feature-pill {
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #dce8fb;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .status-card {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    min-width: 280px;
+    padding: 22px;
+    border-radius: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-card::before {
+    content: '';
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124, 255, 169, 0.18), transparent 66%);
+  }
+
+  .status-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-title {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--danger);
+    box-shadow: 0 0 0 7px rgba(255, 122, 138, 0.14);
+  }
+
+  .status-dot.online {
+    background: var(--accent-2);
+    box-shadow: 0 0 0 7px rgba(124, 255, 169, 0.14);
+  }
+
+  #currentBaseUrl {
+    font-size: 1.05rem;
+    word-break: break-word;
+  }
+
+  .status-note {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+    font-size: 0.94rem;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: end;
+    padding: 18px;
+    border-radius: 26px;
+    margin-bottom: 18px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    padding: 22px;
+    border-radius: 26px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .response-card {
+    padding-bottom: 20px;
+  }
+
+  .card-head h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+  }
+
+  .card-head p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .field-wide {
+    flex: 1 1 420px;
+    margin-top: 0;
+  }
+
+  .field span {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px 15px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.035);
+    outline: none;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease,
+      background 0.2s ease;
+  }
+
+  input:focus {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 4px rgba(102, 214, 255, 0.08);
+  }
+
+  button {
+    margin-top: 18px;
+    border: 0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: #04121a;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      transform 0.2s ease,
+      filter 0.2s ease,
+      box-shadow 0.2s ease;
+    box-shadow: 0 10px 26px rgba(102, 214, 255, 0.18);
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    box-shadow: 0 14px 30px rgba(102, 214, 255, 0.22);
+  }
+
+  button.ghost {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  #responseOutput {
+    min-height: 188px;
+    margin: 18px 0 0;
+    padding: 18px;
+    border-radius: 18px;
+    overflow: auto;
+    color: #dfe9fb;
+    background:
+      linear-gradient(180deg, rgba(5, 11, 21, 0.98), rgba(5, 11, 21, 0.94)),
+      radial-gradient(circle at top right, rgba(102, 214, 255, 0.1), transparent 24%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.94rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 860px) {
+
+    .hero-panel,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    h1 {
+      max-width: 14ch;
+    }
+
+    .status-card {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .shell {
+      width: min(100% - 18px, 1180px);
+      padding-top: 20px;
+    }
+
+    .hero-copy,
+    .controls,
+    .card,
+    .status-card {
+      border-radius: 18px;
+    }
+
+    .action-row {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+</style>
+
+<body>
+  <main class="shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Authentication API microservice</p>
+        <h1>One page to register, log in, and clear the session.</h1>
+        <p class="lede">
+          A compact browser console for the NestJS auth service. It sends JSON
+          requests, returns an access token in the login response, and shows
+          each server response inline.
+        </p>
+
+        <div class="feature-row">
+          <span class="feature-pill">Bearer token flow</span>
+          <span class="feature-pill">Register / Login / Logout</span>
+          <span class="feature-pill">CORS-ready</span>
+        </div>
+      </div>
+
+      <aside class="status-card">
+        <div class="status-card-top">
+          <span class="status-dot" id="connectionDot"></span>
+          <p class="status-title">Connection status</p>
+        </div>
+        <strong id="currentBaseUrl">http://localhost:3000</strong>
+        <p class="status-note">Update this if your API runs on a different port.</p>
+      </aside>
+    </section>
+
+    <section class="controls">
+      <label class="field field-wide">
+        <span>Backend base URL</span>
+        <input id="baseUrlInput" type="url" placeholder="http://localhost:3000" value="http://localhost:3000" />
+      </label>
+
+      <div class="action-row">
+        <button id="saveBaseUrlButton" type="button">Save URL</button>
+        <button id="logoutButton" class="ghost" type="button">Logout</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <form class="card" id="registerForm">
+        <div class="card-head">
+          <h2>Register</h2>
+          <p>Create a new account with a username, email, and strong password.</p>
+        </div>
+
+        <label class="field">
+          <span>Username</span>
+          <input name="username" autocomplete="username" required />
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input name="email" type="email" autocomplete="email" required />
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="new-password" required />
+        </label>
+
+        <label class="field">
+          <span>Confirm password</span>
+          <input name="confirm_password" type="password" autocomplete="new-password" required />
+        </label>
+
+        <button type="submit">Create account</button>
+      </form>
+
+      <form class="card" id="loginForm">
+        <div class="card-head">
+          <h2>Login</h2>
+          <p>Submit your username and password to receive an access token.</p>
+        </div>
+
+        <label class="field">
+          <span>Username</span>
+          <input name="username" autocomplete="username" required />
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" required />
+        </label>
+
+        <button type="submit">Login</button>
+      </form>
+    </section>
+
+    <section class="card response-card">
+      <div class="card-head">
+        <h2>Latest response</h2>
+        <p>Every request result will appear here.</p>
+      </div>
+
+      <pre id="responseOutput">No request sent yet.</pre>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+
+</html>

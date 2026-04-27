@@ -45,7 +45,8 @@ export class AuthenticationService {
       user.password,
     );
 
-    const payload = { sub: user.id, username: user.username };
+    // Keep both `sub` and `userId` for compatibility with services that expect either claim.
+    const payload = { sub: user.id, userId: user.id, username: user.username };
 
     return this.jwtService.sign(payload);
   }

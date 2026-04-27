@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -23,7 +23,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly userRepository: UserRepository,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        cookieExtractor,
+      ]),
       ignoreExpiration: false,
       secretOrKey:
         configService.get<string>('JWT_SECRET') ||
@@ -31,9 +34,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number; username: string }) {
-    const user = await this.userRepository.findUserByUsername(payload.username);
-    if (!user) throw new Error('User not found');
+  async validate(payload: {
+    sub?: string | number;
+    userId?: string | number;
+    username?: string;
+  }) {
+    const userId = payload.userId ?? payload.sub;
+
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Invalid token: userId not found in token',
+      );
+    }
+
+    const user = await this.userRepository.findUserById(String(userId));
+    if (!user) {
+      throw new UnauthorizedException('Invalid token: user not found');
+    }
+
     return user;
   }
 }

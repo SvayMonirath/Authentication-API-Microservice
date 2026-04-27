@@ -5,7 +5,6 @@ import { PasswordService } from '../password/password/password.service';
 import { UserRepository } from 'src/repository/user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaModule } from 'prisma/prisma/prisma.module';
 
 @Module({
@@ -25,13 +24,7 @@ import { PrismaModule } from 'prisma/prisma/prisma.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [
-    AuthenticationService,
-    PasswordService,
-    UserRepository,
-    ConfigService,
-    JwtService,
-  ],
+  providers: [AuthenticationService, PasswordService, UserRepository],
   controllers: [AuthenticationController],
 })
 export class AuthenticationModule {}
